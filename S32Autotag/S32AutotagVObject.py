@@ -13,7 +13,7 @@ import logging
 
 
 '''
-为 S3 自动打 tag
+为 S3 自动打 tag 的 对象级别版本
 S3 的 API 都已经在 CloudWatch 中给出
 可以直接添加
 
@@ -27,30 +27,41 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    region = event['region']
-    detail = event['detail']
-    eventname = detail['eventName']
-    arn = detail['userIdentity']['arn']
-    principal = detail['userIdentity']['principalId']
-    userType = detail['userIdentity']['type']
+    print("=========================")
 
-    # 判断事件是来自 User 实体还是来自 Rule
-    if userType == 'IAMUser':
-        user = detail['userIdentity']['userName']
-    else:
-        user = principal.split(':')[1]
+    try:
+        region = event['region']
+        detail = event['detail']
+        eventname = detail['eventName']
+        arn = detail['userIdentity']['arn']
+        principal = detail['userIdentity']['principalId']
+        userType = detail['userIdentity']['type']
 
-    logger.info('principalId: ' + str(principal))
-    logger.info('region: ' + str(region))
-    logger.info('eventName: ' + str(eventname))
-    logger.info('detail: ' + str(detail))
+        # 判断事件是来自 User 实体还是来自 Rule
+        if userType == 'IAMUser':
+            user = detail['userIdentity']['userName']
+        else:
+            user = principal.split(':')[1]
 
-    # 是否收到正确响应
-    # 当删除 Lambda 时是响应是空的
-    if not detail['responseElements']:
-        logger.warning('Not responseElements found')
-        if detail['errorCode']:
-            logger.error('errorCode: ' + detail['errorCode'])
-        if detail['errorMessage']:
-            logger.error('errorMessage: ' + detail['errorMessage'])
+        logger.info('principalId: ' + str(principal))
+        logger.info('region: ' + str(region))
+        logger.info('eventName: ' + str(eventname))
+        logger.info('detail: ' + str(detail))
+
+        s3 = boto3.client("s3")
+
+        bucket_name = detail['requestParameters']['bucketName']
+        object_name = detail['requestParameters']['key']
+
+        if eventname == 'PutObject':
+            tag = [{'Key': 'Owner', 'Value': user}, {'Key': 'PrincipalId', 'Value': principal}]
+            s3.put_object_tagging(Bucket=bucket_name, Key=object_name, Tagging={'TagSet': tag})
+        else:
+            logger.warning('Not supported action')
+
+        logger.info(' Remaining time (ms): ' + str(context.get_remaining_time_in_millis()) + '\n')
+        print("+++++++++++++++++++++++++")
+
+    except Exception as e:
+        logger.error('Something went wrong: ' + str(e))
         return False
