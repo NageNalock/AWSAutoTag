@@ -54,8 +54,8 @@ def lambda_handler(event, context):
         object_name = detail['requestParameters']['key']
 
         if eventname == 'PutObject':
-            tag = [{'Key': 'Owner', 'Value': user}, {'Key': 'PrincipalId', 'Value': principal}]
-            s3.put_object_tagging(Bucket=bucket_name, Key=object_name, Tagging={'TagSet': tag})
+            tags = [{'Key': 'Owner', 'Value': user}, {'Key': 'PrincipalId', 'Value': principal}]
+            s3.put_object_tagging(Bucket=bucket_name, Key=object_name, Tagging={'TagSet': tags})
         else:
             logger.warning('Not supported action')
 
