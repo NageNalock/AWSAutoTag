@@ -1,38 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2018/8/2 上午10:48
+# @Time    : 2018/8/2 上午10:42
 # @Author  : Dicey
-# @File    : Lambda2Autotag.py
+# @File    : LambdaEC2Autotag.py
 # @Software: PyCharm
 
 from __future__ import print_function
 import json
 import boto3
 import logging
-
-
-'''
-Lambda 自动打 tag (其实一般不一定用的上
-
-Lambda 的实际 API 与文档中并不一致, 其组成为 AIP 名字+数字版本, 以下为常用的部分实际 API:
-CreateFunction20150331
-DeleteFunction20150331
-GetFunction20150331v2
-GetPolicy20150331v2
-ListVersionsByFunction20150331
-RemovePermission20150331v2
-UpdateFunctionCode20150331v2
-UpdateFunctionConfiguration20150331v2
-
-'''
+import time
+import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
 def lambda_handler(event, context):
-    # print('Received event: ' + json.dumps(event, indent=2))
+    #logger.info('Event: ' + str(event))
+    #print('Received event: ' + json.dumps(event, indent=2))
     print("+++++++++++++++++++")
+
+    ids = []
 
     try:
         region = event['region']
@@ -42,9 +30,9 @@ def lambda_handler(event, context):
         principal = detail['userIdentity']['principalId']
         userType = detail['userIdentity']['type']
 
-        # 判断事件是来自 User 实体还是来自 Rule
         if userType == 'IAMUser':
             user = detail['userIdentity']['userName']
+
         else:
             user = principal.split(':')[1]
 
@@ -53,8 +41,6 @@ def lambda_handler(event, context):
         logger.info('eventName: ' + str(eventname))
         logger.info('detail: ' + str(detail))
 
-        # 是否收到正确响应
-        # 当删除 Lambda 时是响应是空的
         if not detail['responseElements']:
             logger.warning('Not responseElements found')
             if detail['errorCode']:
@@ -63,18 +49,42 @@ def lambda_handler(event, context):
                 logger.error('errorMessage: ' + detail['errorMessage'])
             return False
 
-        # Lambda 函数的 arn
-        function_arn = detail['responseElements']['functionArn']
-        logger.info('function_arn: ' + function_arn)
+        ec2 = boto3.resource('ec2')
 
-        client = boto3.client('lambda')
+        if eventname == 'CreateVolume':
+            ids.append(detail['responseElements']['volumeId'])
+            logger.info(ids)
 
-        # 根据事件构造 tag list, 以后可根据需要扩展功能
-        if eventname == 'CreateFunction20150331':
-            tag = {'Owner': user, 'PrincipalId': principal}
-            client.tag_resource(Resource=function_arn, Tags=tag)
+        elif eventname == 'RunInstances':
+            items = detail['responseElements']['instancesSet']['items']
+            for item in items:
+                ids.append(item['instanceId'])
+            logger.info(ids)
+            logger.info('number of instances: ' + str(len(ids)))
+
+            base = ec2.instances.filter(InstanceIds=ids)
+
+            #loop through the instances
+            for instance in base:
+                for vol in instance.volumes.all():
+                    ids.append(vol.id)
+                for eni in instance.network_interfaces:
+                    ids.append(eni.id)
+
+        elif eventname == 'CreateImage':
+            ids.append(detail['responseElements']['imageId'])
+            logger.info(ids)
+
+        elif eventname == 'CreateSnapshot':
+            ids.append(detail['responseElements']['snapshotId'])
+            logger.info(ids)
         else:
             logger.warning('Not supported action')
+
+        if ids:
+            for resourceid in ids:
+                print('Tagging resource ' + resourceid)
+            ec2.create_tags(Resources=ids, Tags=[{'Key': 'Owner', 'Value': user}, {'Key': 'PrincipalId', 'Value': principal}])
 
         logger.info(' Remaining time (ms): ' + str(context.get_remaining_time_in_millis()) + '\n')
 
