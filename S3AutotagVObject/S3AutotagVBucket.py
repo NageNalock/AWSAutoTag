@@ -52,9 +52,11 @@ def lambda_handler(event, context):
             s3.put_bucket_tagging(Bucket=bucket_name, Tagging={'TagSet': tags})
         else:
             logger.warning('Not supported action')
+            return False
 
         logger.info(' Remaining time (ms): ' + str(context.get_remaining_time_in_millis()) + '\n')
         print("+++++++++++++++++++++++++")
+        return True
 
     except Exception as e:
         logger.error('Something went wrong: ' + str(e))
