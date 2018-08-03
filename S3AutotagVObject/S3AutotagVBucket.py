@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# @Time    : 2018/8/2 下午3:03
+# @Time    : 2018/8/2 下午6:30
 # @Author  : Dicey
-# @File    : S32AutotagVObject.py
+# @File    : S3AutotagVBucket.py
 # @Software: PyCharm
 
 
@@ -13,14 +13,10 @@ import logging
 
 
 '''
-为 S3 自动打 tag 的 对象级别版本
+为 S3 自动打 tag 的 桶级别版本
 S3 的 API 都已经在 CloudWatch 中给出
 可以直接添加
-
-特别的, 对象级别(Object Level Operations)的 Cloud Trail 记录需要手动开启
-请参考: https://docs.aws.amazon.com/zh_cn/AmazonS3/latest/user-guide/enable-cloudtrail-events.html
 '''
-
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -49,13 +45,11 @@ def lambda_handler(event, context):
         logger.info('detail: ' + str(detail))
 
         s3 = boto3.client("s3")
-
         bucket_name = detail['requestParameters']['bucketName']
-        object_name = detail['requestParameters']['key']
 
-        if eventname == 'PutObject':
+        if eventname == 'CreateBucket':
             tags = [{'Key': 'Owner', 'Value': user}, {'Key': 'PrincipalId', 'Value': principal}]
-            s3.put_object_tagging(Bucket=bucket_name, Key=object_name, Tagging={'TagSet': tags})
+            s3.put_bucket_tagging(Bucket=bucket_name, Tagging={'TagSet': tags})
         else:
             logger.warning('Not supported action')
 

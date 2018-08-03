@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2018/8/2 下午6:54
 # @Author  : Dicey
-# @File    : DynamoDB2Autotag.py
+# @File    : DynamoDBAutotag.py
 # @Software: PyCharm
 
 from __future__ import print_function

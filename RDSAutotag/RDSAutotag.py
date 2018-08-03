@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2018/8/2 下午8:03
 # @Author  : Dicey
-# @File    : RDS2Autotag.py
+# @File    : RDSAutotag.py
 # @Software: PyCharm
 
 
