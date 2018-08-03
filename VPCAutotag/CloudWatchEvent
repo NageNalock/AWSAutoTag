@@ -8,7 +8,7 @@
 
   "source": "aws.ec2",
 
-  "account": "544735201284",
+  "account": "123456789",
 
   "time": "2018-08-03T03:22:21Z",
 
@@ -28,9 +28,9 @@
 
       "principalId": "AIDAPQEH4HX27PBJWDXVU",
 
-      "arn": "arn:aws-cn:iam::544735201284:user/dicey",
+      "arn": "arn:aws-cn:iam::123456789:user/dicey",
 
-      "accountId": "544735201284",
+      "accountId": "123456789",
 
       "accessKeyId": "ASIAX5VF7RACEEEOHQHU",
 
