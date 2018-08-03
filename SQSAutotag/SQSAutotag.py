@@ -39,7 +39,7 @@ def lambda_handler(event, context):
     queue_url = detail['responseElements']['queueUrl']
 
     if eventname == 'CreateQueue':
-        tags = {'Owner':user, 'PrincipalId': principal}
+        tags = {'Owner': user, 'PrincipalId': principal}
         client.tag_queue(QueueUrl=queue_url, Tags=tags)
         logger.info("Success!")
         return True
