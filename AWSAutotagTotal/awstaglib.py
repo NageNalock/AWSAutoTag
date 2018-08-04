@@ -40,6 +40,7 @@ class Tagger:
         self.logger.info('principalId: ' + str(self.principal))
         self.logger.info('region: ' + str(self.region))
         self.logger.info('detail: ' + str(self.detail))
+        self.logger.setLevel(logging.INFO)
 
     def tag_ec2(self):
         '''
