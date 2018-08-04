@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     detail = event['detail']
     eventname = detail['eventName']
 
-    tagger = awstaglib.Tagger(detail)
+    tagger = awstaglib.Tagger(event)
 
     if eventname == 'RunInstances':
         # 启动 EC2
