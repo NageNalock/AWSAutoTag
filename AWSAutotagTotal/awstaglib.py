@@ -18,13 +18,8 @@ class Tagger:
     event = {}
     region = ""
 
-    # def __init__(self, detail, user, principal):
-    #     self.detail = detail
-    #     self.user = user
-    #     self. principal = principal
-    #     self.logger.setLevel(logging.INFO)
-
     def __init__(self, event):
+        # 构造方法
         self.event = event
         self.region = str(event['region'])
         self.detail = event['detail']
@@ -35,6 +30,7 @@ class Tagger:
         if userType == 'IAMUser':
             self.user = self.detail['userIdentity']['userName']
         else:
+            # 若非实体用户则从 principal 中截取 Rule 的信息
             self.user = self.principal.split(':')[1]
 
         self.logger.info('principalId: ' + str(self.principal))
