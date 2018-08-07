@@ -59,7 +59,7 @@
 
   单独为 S3 设置 Tag 及 S3  在  CloudWatch 中监测到的事件信息。
 
-  特别的，分为对 S3 的**桶（bucket）**设置 Tag 以及对 S3 中的对象**（Object）**设置 Tag
+  特别的，分为对 S3 的**桶（bucket）**设置 Tag 以及对 S3 中的**对象（Object）**设置 Tag
 
 - [SQSAutotag](https://github.com/NageNalock/AWSAutoTag/tree/master/SQSAutotag)
 
